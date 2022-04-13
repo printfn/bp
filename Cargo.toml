@@ -1,0 +1,16 @@
+[package]
+name = "bp"
+version = "0.0.1"
+edition = "2021"
+description = "cross-platform clipboard tool"
+license = "0BSD"
+homepage = "https://github.com/printfn/bp"
+repository = "https://github.com/printfn/bp"
+categories = ["command-line-utilities"]
+keywords = ["clipboard", "cli", "tool"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+atty = "0.2.14"
+copypasta = "0.7.1"
