@@ -7,6 +7,16 @@ optimised to work in pipes. Its behavior is based on the
 [`tee`](https://man7.org/linux/man-pages/man1/tee.1.html)
 command.
 
+## Installation
+
+[`bp`](https://crates.io/crates/bp) is on
+[crates.io](https://crates.io/crates/bp), so you can install
+it by running:
+
+```bash
+cargo install bp
+```
+
 ## Usage
 
 ### Copy
