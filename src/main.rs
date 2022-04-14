@@ -1,12 +1,12 @@
 use std::{
-    error,
+    env, error, ffi, fmt, fs,
     io::{self, Write},
     process,
 };
 
-pub type Error = Box<dyn error::Error + Send + Sync + 'static>;
+mod clipboard;
 
-use copypasta::{ClipboardContext, ClipboardProvider};
+pub type Error = Box<dyn error::Error + Send + Sync + 'static>;
 
 fn stdin_tty() -> bool {
     atty::is(atty::Stream::Stdin)
@@ -16,40 +16,81 @@ fn stdout_tty() -> bool {
     atty::is(atty::Stream::Stdout)
 }
 
-fn copy(mut file: impl io::Read) -> Result<Vec<u8>, Error> {
-    let mut ctx = ClipboardContext::new()?;
-    let mut contents = Vec::with_capacity(32);
-    file.read_to_end(&mut contents)?;
-    ctx.set_contents(String::from_utf8(contents.clone())?)?;
-    Ok(contents)
+#[derive(Debug)]
+struct UnknownArgumentError(ffi::OsString);
+impl fmt::Display for UnknownArgumentError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unknown argument `{}`", self.0.to_string_lossy())
+    }
 }
-
-fn paste() -> Result<String, Error> {
-    let mut ctx = ClipboardContext::new()?;
-    let contents = ctx.get_contents()?;
-    Ok(contents)
-}
+impl error::Error for UnknownArgumentError {}
 
 fn inner_main() -> Result<(), Error> {
-    match (stdin_tty(), stdout_tty()) {
-        (true, true) => {
-            let contents = paste()?;
-            print!("{}", contents);
-            if !contents.ends_with('\n') {
-                println!();
+    let mut input_file = None;
+    let mut args = env::args_os().skip(1);
+    let mut force_stdout = false;
+    let mut output_to_stderr = false;
+    while let Some(arg) = args.next() {
+        if arg == "-h" || arg == "--help" {
+            print_usage(io::stdout())?;
+            return Ok(());
+        } else if arg == "-O" || arg == "--stdout" {
+            force_stdout = true;
+        } else if arg == "-E" || arg == "--stderr" {
+            output_to_stderr = true;
+        } else if arg
+            .as_os_str()
+            .to_str()
+            .map_or(false, |s| s.starts_with('-'))
+        {
+            return Err(UnknownArgumentError(arg))?;
+        } else {
+            if input_file.is_none() {
+                input_file = Some(arg);
+            } else {
+                return Err(UnknownArgumentError(arg))?;
             }
         }
-        (true, false) => {
-            print!("{}", paste()?);
+    }
+
+    let mut tty_paste = false;
+
+    let contents = if let Some(input_file) = input_file {
+        let file = fs::File::open(input_file)?;
+        clipboard::copy(file)?
+    } else if stdin_tty() {
+        if !output_to_stderr {
+            tty_paste = true;
         }
-        (false, true) => {
-            copy(io::stdin())?;
-        }
-        (false, false) => {
-            let contents = copy(io::stdin())?;
-            io::stdout().write_all(&contents)?;
+        clipboard::paste()?
+    } else {
+        clipboard::copy(io::stdin())?
+    };
+
+    if force_stdout || tty_paste || !stdout_tty() {
+        io::stdout().write_all(&contents)?;
+        if tty_paste && !contents.ends_with(&[b'\n']) && !contents.is_empty() && stdout_tty() {
+            println!();
         }
     }
+
+    if output_to_stderr {
+        io::stderr().write_all(&contents)?;
+    }
+
+    Ok(())
+}
+
+fn print_usage(mut f: impl io::Write) -> io::Result<()> {
+    write!(
+        f,
+        "Usage: bp [FLAGS] [file]
+
+Flags:
+    -h  --help      show usage information
+    -O  --stdout    print clipboard contents to stdout
+    -E  --stderr    print clipboard contents to stderr\n"
+    )?;
     Ok(())
 }
 
@@ -57,7 +98,7 @@ fn main() {
     match inner_main() {
         Ok(()) => (),
         Err(e) => {
-            eprint!("{}", e);
+            eprint!("Error: {}", e);
             while let Some(e) = e.source() {
                 eprint!(": {}", e);
             }

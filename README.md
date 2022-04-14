@@ -29,6 +29,9 @@ echo "some text" | bp
 curl https://example.com | bp
 
 # copy the contents of `file.txt`
+bp file.txt
+
+# you can also pipe in a file
 bp <file.txt
 ```
 
