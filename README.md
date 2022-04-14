@@ -1,0 +1,46 @@
+# bp
+
+`bp` is a cross-platform clipboard tool written in Rust, based on
+[cb](https://gist.github.com/RichardBronosky/56d8f614fab2bacdd8b048fb58d0c0c7).
+It can automatically detect whether to copy or paste, and is
+optimised to work in pipes. Its behavior is based on the
+[`tee`](https://man7.org/linux/man-pages/man1/tee.1.html)
+command.
+
+## Usage
+
+### Copy
+
+```bash
+# copy some text
+echo "some text" | bp
+
+# copy the HTML from `example.com`
+curl https://example.com | bp
+
+# copy the contents of `file.txt`
+bp <file.txt
+```
+
+### Paste
+
+```bash
+# paste to standard output
+bp
+
+# paste to a pipe
+bp | jq | less
+
+# paste to `out.txt`
+bp >out.txt
+```
+
+### Chaining
+
+```bash
+# prettify, copy and view `example.json`
+cat example.json | jq | bp | less
+
+# hex-encode contents of the clipboard
+bp | xxd | bp
+```
