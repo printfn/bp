@@ -51,6 +51,9 @@ bp >out.txt
 ### Chaining
 
 ```bash
+# remove formatting from copied text
+bp | bp
+
 # prettify, copy and view `example.json`
 cat example.json | jq | bp | less
 
