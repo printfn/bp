@@ -27,10 +27,9 @@ impl error::Error for UnknownArgumentError {}
 
 fn inner_main() -> Result<(), Error> {
     let mut input_file = None;
-    let mut args = env::args_os().skip(1);
     let mut force_stdout = false;
     let mut output_to_stderr = false;
-    while let Some(arg) = args.next() {
+    for arg in env::args_os().skip(1) {
         if arg == "-h" || arg == "--help" {
             print_usage(io::stdout())?;
             return Ok(());
@@ -44,12 +43,10 @@ fn inner_main() -> Result<(), Error> {
             .map_or(false, |s| s.starts_with('-'))
         {
             return Err(UnknownArgumentError(arg))?;
+        } else if input_file.is_none() {
+            input_file = Some(arg);
         } else {
-            if input_file.is_none() {
-                input_file = Some(arg);
-            } else {
-                return Err(UnknownArgumentError(arg))?;
-            }
+            return Err(UnknownArgumentError(arg))?;
         }
     }
 
