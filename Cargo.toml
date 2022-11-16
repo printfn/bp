@@ -13,4 +13,4 @@ keywords = ["clipboard", "cli", "tool"]
 
 [dependencies]
 atty = "0.2.14"
-copypasta = "0.7.1"
+copypasta = "0.8.1"
