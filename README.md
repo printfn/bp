@@ -3,7 +3,7 @@
 `bp` is a cross-platform clipboard tool written in Rust, based on
 [cb](https://gist.github.com/RichardBronosky/56d8f614fab2bacdd8b048fb58d0c0c7).
 It can automatically detect whether to copy or paste, and is
-optimised to work in pipes. Its behavior is based on the
+optimised to work in pipes. Its behaviour is based on the
 [`tee`](https://man7.org/linux/man-pages/man1/tee.1.html)
 command.
 
