@@ -60,3 +60,7 @@ cat example.json | jq | bp | less
 # hex-encode contents of the clipboard
 bp | xxd | bp
 ```
+
+## Licence
+
+`bp` is available under the `GPL-3.0-or-later`.
