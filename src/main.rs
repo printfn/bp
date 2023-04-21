@@ -29,6 +29,7 @@ fn inner_main() -> Result<(), Error> {
     let mut input_file = None;
     let mut force_stdout = false;
     let mut output_to_stderr = false;
+    let mut strip_whitespace = false;
     for arg in env::args_os().skip(1) {
         if arg == "-h" || arg == "--help" {
             print_usage(io::stdout())?;
@@ -37,6 +38,8 @@ fn inner_main() -> Result<(), Error> {
             force_stdout = true;
         } else if arg == "-E" || arg == "--stderr" {
             output_to_stderr = true;
+        } else if arg == "-s" || arg == "--strip" {
+            strip_whitespace = true;
         } else if arg
             .as_os_str()
             .to_str()
@@ -54,19 +57,24 @@ fn inner_main() -> Result<(), Error> {
 
     let contents = if let Some(input_file) = input_file {
         let file = fs::File::open(input_file)?;
-        clipboard::copy(file)?
+        clipboard::copy(file, strip_whitespace)?
     } else if stdin_tty() {
         if !output_to_stderr {
             tty_paste = true;
         }
-        clipboard::paste()?
+        clipboard::paste(strip_whitespace)?
     } else {
-        clipboard::copy(io::stdin())?
+        clipboard::copy(io::stdin(), strip_whitespace)?
     };
 
     if force_stdout || tty_paste || !stdout_tty() {
         io::stdout().write_all(&contents)?;
-        if tty_paste && !contents.ends_with(&[b'\n']) && !contents.is_empty() && stdout_tty() {
+        if tty_paste
+            && !contents.ends_with(&[b'\n'])
+            && !contents.is_empty()
+            && stdout_tty()
+            && !strip_whitespace
+        {
             println!();
         }
     }
@@ -86,7 +94,8 @@ fn print_usage(mut f: impl io::Write) -> io::Result<()> {
 Flags:
     -h  --help      show usage information
     -O  --stdout    print clipboard contents to stdout
-    -E  --stderr    print clipboard contents to stderr\n"
+    -E  --stderr    print clipboard contents to stderr
+    -s  --strip     strip whitespace from the content\n"
     )?;
     Ok(())
 }
