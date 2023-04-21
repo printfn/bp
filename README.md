@@ -67,11 +67,9 @@ bp | xxd | bp
 # copy some text with whitespace stripped
 echo " some text " | bp -s
 
-# copy the contents of `file.txt` with whitespace stripped
-bp -s file.txt
-
 # paste to standard output with whitespace stripped
 bp -s
+some text%
 ```
 
 ## Licence
