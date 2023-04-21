@@ -57,8 +57,22 @@ bp | bp
 # prettify, copy and view `example.json`
 cat example.json | jq | bp | less
 
+# edit your current clipboard
+bp | vipe | bp
+
 # hex-encode contents of the clipboard
 bp | xxd | bp
+```
+
+### Strip Whitespace
+
+```bash
+# copy some text with whitespace stripped
+echo " some text " | bp -s
+
+# paste to standard output with whitespace stripped
+bp -s
+some text%
 ```
 
 ## Licence

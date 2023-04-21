@@ -3,16 +3,24 @@ use std::io;
 
 use copypasta::{ClipboardContext, ClipboardProvider};
 
-pub fn copy(mut file: impl io::Read) -> Result<Vec<u8>, Error> {
+pub fn copy(mut file: impl io::Read, strip_whitespace: bool) -> Result<Vec<u8>, Error> {
     let mut ctx = ClipboardContext::new()?;
     let mut contents = Vec::with_capacity(32);
     file.read_to_end(&mut contents)?;
-    ctx.set_contents(String::from_utf8(contents.clone())?)?;
-    Ok(contents)
+
+    let mut contents = String::from_utf8(contents)?;
+    if strip_whitespace {
+        contents = contents.trim().to_string();
+    }
+    ctx.set_contents(contents.clone())?;
+    Ok(contents.into())
 }
 
-pub fn paste() -> Result<Vec<u8>, Error> {
+pub fn paste(strip_whitespace: bool) -> Result<Vec<u8>, Error> {
     let mut ctx = ClipboardContext::new()?;
-    let contents = ctx.get_contents()?.into_bytes();
-    Ok(contents)
+    let mut contents = ctx.get_contents()?;
+    if strip_whitespace {
+        contents = contents.trim().to_string();
+    }
+    Ok(contents.into_bytes())
 }
