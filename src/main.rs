@@ -9,11 +9,11 @@ mod clipboard;
 pub type Error = Box<dyn error::Error + Send + Sync + 'static>;
 
 fn stdin_tty() -> bool {
-    atty::is(atty::Stream::Stdin)
+    io::IsTerminal::is_terminal(&io::stdin())
 }
 
 fn stdout_tty() -> bool {
-    atty::is(atty::Stream::Stdout)
+    io::IsTerminal::is_terminal(&io::stdout())
 }
 
 #[derive(Debug)]
