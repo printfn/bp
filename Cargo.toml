@@ -1,6 +1,6 @@
 [package]
 name = "bp"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "cross-platform clipboard tool"
 license = "GPL-3.0-or-later"
