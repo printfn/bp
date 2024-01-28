@@ -34,6 +34,9 @@ fn inner_main() -> Result<(), Error> {
         if arg == "-h" || arg == "--help" {
             print_usage(io::stdout())?;
             return Ok(());
+        } else if arg == "--version" || arg == "-V" || arg == "-v" {
+            print_version()?;
+            return Ok(());
         } else if arg == "-O" || arg == "--stdout" {
             force_stdout = true;
         } else if arg == "-E" || arg == "--stderr" {
@@ -86,17 +89,30 @@ fn inner_main() -> Result<(), Error> {
     Ok(())
 }
 
+fn get_version_number() -> &'static str {
+    env!("CARGO_PKG_VERSION")
+}
+
 fn print_usage(mut f: impl io::Write) -> io::Result<()> {
     write!(
         f,
         "Usage: bp [FLAGS] [file]
 
+Version {version}
+
 Flags:
     -h  --help      show usage information
+    -v  --version   show version number
     -O  --stdout    print clipboard contents to stdout
     -E  --stderr    print clipboard contents to stderr
-    -s  --strip     strip whitespace from the content\n"
+    -s  --strip     strip whitespace from the content\n",
+        version = get_version_number()
     )?;
+    Ok(())
+}
+
+fn print_version() -> io::Result<()> {
+    writeln!(io::stdout(), "bp {}", get_version_number())?;
     Ok(())
 }
 
